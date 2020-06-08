@@ -41,16 +41,16 @@ qi = zeros(1, samples);
 qh = 0;
 %==== Main Loop
 for i = 2:time*fs
-    iconv = min([length(f), length(r), i]);
-    qh = sum(r(1:iconv).*flip(q(i-iconv+1:i)+Zc*f(i-iconv+1:i)));   % Eq. (11)
-    q(i) = qh + Zc*f(i);    % Eq. (10)
+    iconv = min([length(r), i-1]);
+    qh = sum( r(1:iconv) .* (q(i-1:-1:i-iconv) + Zc*f(i-1:-1:i-iconv)));   % Eq. (11)
+    q(i) = qh + Zc*f(i-1);    % Eq. (10)
+    qo(i) = (q(i) + Zc * f(i))/2;
+    qi(i) = (q(i) - Zc * f(i))/2;
     if q(i)<qc      % Eq. (1) + (20) with the discontinuity
         f(i)=0;
     else
         f(i) = k*(p-q(i))*(q(i)-qc);
     end
-    qo(i) = (q(i) + Zc * f(i))/2;
-    qi(i) = q(i) - qo(i);           % Eq. (7)
 end
 
 %% Plot
