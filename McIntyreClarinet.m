@@ -14,16 +14,18 @@ Zc = 1;             % characteristic impedance (normalized)
 fs = floor(128/T);
 ts = 1/fs;
 
-percent = 0.2;      
+percent = 0.05;     % Fig. 5(a)
+percent = 0.2;      % Fig. 5(b)
+% percent = 0.005;      % Having Problem Still
 b = (percent * T / log(2)^(1/2) / 2) ^(-2); % Derived from Eq. (19)
 
 t = 0:ts:T*2;     % length of impulse response equals the period
 rEXP = exp(-b * (t-T).^2);
 
-a = -1 / trapz(rEXP); % integration using the trapezoidal rule
-r = a * rEXP;       % Eq. (18)
-figure
+a = -1 / trapz(rEXP);   % integration using the trapezoidal rule
+r = a * rEXP;           % Eq. (18)
 
+figure(1)
 plot(t/T, r);
 xlabel('t/T');
 ylabel('r');
@@ -31,7 +33,7 @@ ylabel('r');
 k = 0.2;            % parameters in Eq. (20)
 qc = -2;
 p = 3;
-time = 0.05;
+time = 0.1;
 samples = floor(time * fs);
 %==== Initialization
 f = zeros(1, samples);
@@ -40,6 +42,7 @@ qo = zeros(1, samples);
 qi = zeros(1, samples);
 qh = 0;
 %==== Main Loop
+tic
 for i = 2:time*fs
     iconv = min([length(r), i-1]);
     qh = sum( r(1:iconv) .* (q(i-1:-1:i-iconv) + Zc*f(i-1:-1:i-iconv)));   % Eq. (11)
@@ -52,14 +55,22 @@ for i = 2:time*fs
         f(i) = k*(p-q(i))*(q(i)-qc);
     end
 end
+toc
 
-%% Plot
-figure
+%==== Plot
+figure(2)
 subplot(4,1,1);
-plot((1:samples)/fs, q)
+plot((1:samples)/fs, q); hold on;
+ylabel('q')
 subplot(4,1,2);
-plot((1:samples)/fs, f)
+plot((1:samples)/fs, f); hold on;
+ylabel('f')
 subplot(4,1,3);
-plot((1:samples)/fs, qo)
+plot((1:samples)/fs, qo); hold on;
+ylabel('q_o')
 subplot(4,1,4);
-plot((1:samples)/fs, qi)
+plot((1:samples)/fs, qi); hold on;
+ylabel('q_i')
+xlabel('t(s)')
+
+set(findall(gcf,'-property','FontSize'),'FontSize',18)
